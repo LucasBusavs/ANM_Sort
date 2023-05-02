@@ -18,6 +18,7 @@ def kmzConverter(filePath):
     os.remove(zip)
     os.rename(path + "/" + kmlFile, fileName[0] + ".kml")
     print('KMZ converterd successfully')
+    return fileName[0] + ".kml"
 
 filetypes = (
     ('Google Earth (.kml)', '*.KML'),
@@ -30,8 +31,33 @@ filePath = tk.filedialog.askopenfilename(
     filetypes=filetypes,
 )
 root.destroy()
+
+notFound = []
+phases = []
+
 if filePath != '':
     if filePath.endswith(".kmz"):
-        kmzConverter(filePath)
+        filePath = kmzConverter(filePath)
+    
+    with open(filePath, "r", encoding='utf8') as f:
+        lines = f.read()
+    
+    split1 = lines.split("<Placemark>")
+    
+    for block in split1:
+        if block!=split1[0]:
+            start = block.find("<td>Fase</td>")
+            if start!=-1:
+                start = start + 19
+                end = start +1
+                print(block[block.find("<td>Fase</td>")+19])
+                while block[start:end].find("<") == -1:
+                    print(block[start:end])
+                    end = end + 1
+                
+            else:
+                notFound.append(block)
+    if len(notFound) != 0:
+        print("Algum nao foi encontrado")
 else:
     print("No file selected")
