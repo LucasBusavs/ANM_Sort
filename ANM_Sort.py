@@ -17,7 +17,7 @@ def kmzConverter(filePath):
     kmlFile = kmlFile[0]
     os.remove(zip)
     os.rename(path + "/" + kmlFile, fileName[0] + ".kml")
-    print('KMZ converterd successfully')
+    print('KMZ converted successfully')
     return fileName[0] + ".kml"
 
 def boundPhase(block):
@@ -75,15 +75,23 @@ if filePath != '':
     for phase in phases:
         for block in split:
             if block!=split[0]:
-                try:
-                    kml.index(f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
-                except:
-                    kml = kml + f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n'
-                start = block.find("<td>Fase</td>")
-                
-                kml = kml + '\t\t\t<Placemark>\n'
-                kml = kml + block
+                if block == split[-1]:
+                    last = block.split("</Placemark>")
+                    block = last[0] + "</Placemark>"
+                start, end = boundPhase(block)
+                if phase == block[start:end]:
+                    try:
+                        kml.index(f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                    except:
+                        kml = kml + (f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                    kml = kml + '<Placemark>'
+                    kml = kml + block
         kml = kml + '</Folder>\n'
+    kml = split[0] + kml + last[1]
+    
+    with open(filePath, "w", encoding='utf8') as f:
+        f.write(kml) 
+    
     if len(notFound) != 0:
         print("Some not found")
 
