@@ -52,12 +52,17 @@ if filePath != '':
                 end = start +1
                 print(block[block.find("<td>Fase</td>")+19])
                 while block[start:end].find("<") == -1:
-                    print(block[start:end])
                     end = end + 1
-                
+                end = end - 1
+                print(block[start:end])
+                try:
+                    phases.index('block[start:end]')
+                except:
+                    phases.append('block[start:end]')
             else:
                 notFound.append(block)
     if len(notFound) != 0:
-        print("Algum nao foi encontrado")
+        print("Some not found")
+    print(phases)
 else:
     print("No file selected")
