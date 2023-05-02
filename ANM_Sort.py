@@ -20,26 +20,27 @@ def kmzConverter(filePath):
     print('KMZ converterd successfully')
     return fileName[0] + ".kml"
 
-def phasesName(file):
-    split = file.split("<Placemark>")
-    
-    for block in split:
-        if block!=split[0]:
-            start = block.find("<td>Fase</td>")
-            if start!=-1:
-                start = start + 19
-                end = start +1
-                while block[start:end].find("<") == -1:
-                    end = end + 1
-                end = end - 1
+def boundPhase(block):
+    notFound = []
+    start = block.find("<td>Fase</td>")
+    if start!=-1:
+        start = start + 19
+        end = start +1
+        while block[start:end].find("<") == -1:
+            end = end + 1
+        end = end - 1
+    else:
+        notFound.append(block)
+    return start, end
 
-                try:
-                    phases.index(block[start:end])
-                except:
-                    phases.append(block[start:end])
-                
-            else:
-                notFound.append(block)
+def phasesName(splitFile):
+    for block in splitFile:
+        if block!=splitFile[0]:
+            start, end = boundPhase(block)
+            try:
+                phases.index(block[start:end])
+            except:
+                phases.append(block[start:end])
 
 filetypes = (
     ('Google Earth (.kml)', '*.KML'),
@@ -56,6 +57,8 @@ root.destroy()
 notFound = []
 phases = []
 
+kml = ''
+
 if filePath != '':
     if filePath.endswith(".kmz"):
         filePath = kmzConverter(filePath)
@@ -63,10 +66,24 @@ if filePath != '':
     with open(filePath, "r", encoding='utf8') as f:
         lines = f.read()
     
-    phasesName(lines)
+    split = lines.split("<Placemark>")
+    
+    phasesName(split)
     
     print(phases)
     
+    for phase in phases:
+        for block in split:
+            if block!=split[0]:
+                try:
+                    kml.index(f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                except:
+                    kml = kml + f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n'
+                start = block.find("<td>Fase</td>")
+                
+                kml = kml + '\t\t\t<Placemark>\n'
+                kml = kml + block
+        kml = kml + '</Folder>\n'
     if len(notFound) != 0:
         print("Some not found")
 
