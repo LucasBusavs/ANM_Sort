@@ -56,9 +56,9 @@ if filePath != '':
                 end = end - 1
                 print(block[start:end])
                 try:
-                    phases.index('block[start:end]')
+                    phases.index(block[start:end])
                 except:
-                    phases.append('block[start:end]')
+                    phases.append(block[start:end])
             else:
                 notFound.append(block)
     if len(notFound) != 0:
