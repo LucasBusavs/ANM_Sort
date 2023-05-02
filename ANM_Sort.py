@@ -20,6 +20,27 @@ def kmzConverter(filePath):
     print('KMZ converterd successfully')
     return fileName[0] + ".kml"
 
+def phasesName(file):
+    split = file.split("<Placemark>")
+    
+    for block in split:
+        if block!=split[0]:
+            start = block.find("<td>Fase</td>")
+            if start!=-1:
+                start = start + 19
+                end = start +1
+                while block[start:end].find("<") == -1:
+                    end = end + 1
+                end = end - 1
+
+                try:
+                    phases.index(block[start:end])
+                except:
+                    phases.append(block[start:end])
+                
+            else:
+                notFound.append(block)
+
 filetypes = (
     ('Google Earth (.kml)', '*.KML'),
     ('Google Earth (.kmz)', '*.KMZ'),
@@ -42,27 +63,12 @@ if filePath != '':
     with open(filePath, "r", encoding='utf8') as f:
         lines = f.read()
     
-    split1 = lines.split("<Placemark>")
+    phasesName(lines)
     
-    for block in split1:
-        if block!=split1[0]:
-            start = block.find("<td>Fase</td>")
-            if start!=-1:
-                start = start + 19
-                end = start +1
-                print(block[block.find("<td>Fase</td>")+19])
-                while block[start:end].find("<") == -1:
-                    end = end + 1
-                end = end - 1
-                print(block[start:end])
-                try:
-                    phases.index(block[start:end])
-                except:
-                    phases.append(block[start:end])
-            else:
-                notFound.append(block)
+    print(phases)
+    
     if len(notFound) != 0:
         print("Some not found")
-    print(phases)
+
 else:
     print("No file selected")
