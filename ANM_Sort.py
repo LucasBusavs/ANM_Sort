@@ -78,10 +78,34 @@ def phasesTypes(splitFile, notFound, phases):
             except:
                 phases.append(block[start:end])
 
+'''
+Function to write the final .kml file
+Receives a list of phases types , the file already splitted, and notFound list, to pass as a parameter when calling boundPhase
+Returns a kml string containing the result of the algorithm
+'''
+def write(phases, splitFile, notFound):
+    kml = ''
+    for phase in phases:
+        for block in splitFile:
+            if block!=splitFile[0]:
+                if block == splitFile[-1]:
+                    last = block.split("</Placemark>")
+                    block = last[0] + "</Placemark>"
+                start, end = boundPhase(block, notFound)
+                if phase == block[start:end]:
+                    try:
+                        kml.index(f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                    except:
+                        kml = kml + (f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                    kml = kml + '<Placemark>'
+                    kml = kml + block
+        kml = kml + '</Folder>\n'
+    kml = splitFile[0] + kml + last[1]
+    return kml
+
 def main():
     notFound = []
     phases = []
-    kml = ''
 
     filePath = fileDialog()
     if filePath != '':
@@ -97,22 +121,7 @@ def main():
         phases.sort()
         print(phases)
         
-        for phase in phases:
-            for block in split:
-                if block!=split[0]:
-                    if block == split[-1]:
-                        last = block.split("</Placemark>")
-                        block = last[0] + "</Placemark>"
-                    start, end = boundPhase(block, notFound)
-                    if phase == block[start:end]:
-                        try:
-                            kml.index(f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
-                        except:
-                            kml = kml + (f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
-                        kml = kml + '<Placemark>'
-                        kml = kml + block
-            kml = kml + '</Folder>\n'
-        kml = split[0] + kml + last[1]
+        kml = write(phases, split, notFound)
         
         with open(filePath, "w", encoding='utf8') as f:
             f.write(kml) 
