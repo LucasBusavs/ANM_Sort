@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
+# Algorithm to organize Brazilian mining data in folders, by their phases
+
 import tkinter as tk
 from tkinter import filedialog
 import os
 from zipfile import ZipFile
 
+'''
+Function to generate a file dialog to select the right file to be open
+Returns a string containing the selected file path
+'''
 def fileDialog():
     filetypes = (
         ('Google Earth (.kml)', '*.KML'),
@@ -19,6 +25,11 @@ def fileDialog():
     
     return filePath
 
+'''
+Function to convert a .kmz file into a .kml file
+Receive the path of.kmz file
+Returns the new path of the .kml file
+'''
 def kmzConverter(filePath):
     fileName = filePath.split(".kmz")
     zip = fileName[0] + ".zip"
@@ -35,12 +46,17 @@ def kmzConverter(filePath):
     print('KMZ converted successfully')
     return fileName[0] + ".kml"
 
+'''
+Function to discover the start and end positions of the phase type passed by parameter
+Receive a block from the file, to be analyzed, and if "<td>Phase</td>" is not found, add the block to the notFound list
+Returns a tuple of the start and end positions, in that order
+'''
 def boundPhase(block, notFound):
     notFound = []
     start = block.find("<td>Fase</td>")
+    start = start + 19
+    end = start +1
     if start!=-1:
-        start = start + 19
-        end = start +1
         while block[start:end].find("<") == -1:
             end = end + 1
         end = end - 1
@@ -48,7 +64,12 @@ def boundPhase(block, notFound):
         notFound.append(block)
     return start, end
 
-def phasesName(splitFile, notFound, phases):
+'''
+Procedure to generate a list of phase types, each file has different types
+Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase, and list of phases
+Change the list of phases declared in main()
+'''
+def phasesTypes(splitFile, notFound, phases):
     for block in splitFile:
         if block!=splitFile[0]:
             start, end = boundPhase(block, notFound)
@@ -72,7 +93,7 @@ def main():
         
         split = lines.split("<Placemark>")
         
-        phasesName(split, notFound, phases)
+        phasesTypes(split, notFound, phases)
         phases.sort()
         print(phases)
         
