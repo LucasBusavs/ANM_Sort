@@ -103,6 +103,27 @@ def write(phases, splitFile, notFound):
     kml = splitFile[0] + kml + last[1]
     return kml
 
+def test(phases, splitFile, notFound):
+    kml = ''
+    flag = 0
+    for phase in phases:
+        for i in range(1, len(splitFile)):
+            block = splitFile[i]
+            if i == len(splitFile) - 1:
+                last = block.split("</Placemark>")
+                block = last[0] + "</Placemark>"
+            start, end = boundPhase(block, notFound)
+            if phase == block[start:end]:
+                if flag == 0:
+                    kml = kml + (f'\t\t<Folder>\n\t\t\t<name>{phase}</name>\n')
+                    flag = 1
+                kml = kml + '<Placemark>'
+                kml = kml + block
+        kml = kml + '</Folder>\n'
+        flag = 0
+    kml = splitFile[0] + kml + last[1]
+    return kml
+
 def main():
     notFound = []
     phases = []
