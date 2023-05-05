@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 from zipfile import ZipFile
+import time
 
 '''
 Function to generate a file dialog to select the right file to be open
@@ -170,6 +171,7 @@ def main():
     phasesCount = []
 
     filePath = fileDialog()
+    begin = time.time()
     if filePath != '':
         if filePath.endswith(".kmz"):
             filePath = kmzConverter(filePath)
@@ -187,16 +189,20 @@ def main():
         #phases = sortPhases(phases, phasesCount)
         #print(phases)
         
-        kml = test2(phases, split, notFound)
+        kml = write(phases, split, notFound)
 
         with open(filePath, "w", encoding='utf8') as f:
-            f.write(kml) 
+            f.test(kml) 
         
         if len(notFound) != 0:
             print("Some not found")
 
     else:
         print("No file selected")
+    return begin
 
 if __name__ == '__main__':
-    main()
+    begin = main()
+    end = time.time()
+    executeTime = end - begin
+    print(f'Time to execute in seconds: {executeTime: .5f}')
