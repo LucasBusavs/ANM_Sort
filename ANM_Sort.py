@@ -124,9 +124,22 @@ def test(phases, splitFile, notFound):
     kml = splitFile[0] + kml + last[1]
     return kml
 
+def count(phases, splitFile, notFound):
+    phasesCount = [0] * len(phases)
+    for block in splitFile:
+        if block!=splitFile[0]:
+            start, end = boundPhase(block, notFound)
+            phase = block[start:end]
+            for i in range(len(phases)):
+                if phases[i]==phase:
+                    phasesCount[i] = phasesCount[i] + 1
+                    break
+    return phasesCount
+
 def main():
     notFound = []
     phases = []
+    phasesCount = []
 
     filePath = fileDialog()
     if filePath != '':
@@ -139,8 +152,10 @@ def main():
         split = lines.split("<Placemark>")
         
         phasesTypes(split, notFound, phases)
-        phases.sort()
+        #phases.sort()
+        phasesCount = count(phases, split, notFound)
         print(phases)
+        print(phasesCount)
         
         kml = write(phases, split, notFound)
         
