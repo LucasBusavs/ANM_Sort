@@ -136,6 +136,15 @@ def count(phases, splitFile, notFound):
                     break
     return phasesCount
 
+def orderPhases(phases, phasesCount):
+    # criar uma lista de tuplas com as strings e as suas frequências
+    tuple = list(zip(phases, phasesCount))
+    # ordenar a lista de tuplas pela frequência (segundo item da tupla)
+    orderlyTuple = sorted(tuple, key=lambda x: x[1], reverse=True)
+    # criar uma lista ordenada apenas das strings
+    phasesOrderly = [t[0] for t in orderlyTuple]
+    return phasesOrderly
+
 def main():
     notFound = []
     phases = []
@@ -152,10 +161,11 @@ def main():
         split = lines.split("<Placemark>")
         
         phasesTypes(split, notFound, phases)
-        #phases.sort()
         phasesCount = count(phases, split, notFound)
         print(phases)
         print(phasesCount)
+        phases = orderPhases(phases, phasesCount)
+        print(phases)
         
         kml = write(phases, split, notFound)
         
