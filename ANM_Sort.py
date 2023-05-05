@@ -124,6 +124,28 @@ def test(phases, splitFile, notFound):
     kml = splitFile[0] + kml + last[1]
     return kml
 
+def test2(phases, splitFile, notFound):
+    kmlList = [''] * len(phases)
+    for i in range(1, len(splitFile)):
+        block = splitFile[i]
+        if i == len(splitFile) - 1:
+            last = block.split("</Placemark>")
+            block = last[0] + "</Placemark>"
+        start, end = boundPhase(block, notFound)
+        for j in range(len(phases)):
+            if phases[j] == block[start:end]:
+                kmlList[j] = kmlList[j] + '<Placemark>'
+                kmlList[j] = kmlList[j] + block
+    kmlResult = result(kmlList, splitFile, last, phases)
+    return kmlResult
+
+def result(kmlList, splitFile, last, phases):
+    kmlResult = splitFile[0]
+    for i in range(len(kmlList)):
+        kmlResult = kmlResult + (f'\t\t<Folder>\n\t\t\t<name>{phases[i]}</name>\n') + kmlList[i] + '</Folder>\n'
+    kmlResult = kmlResult + last[1]
+    return kmlResult
+
 def count(phases, splitFile, notFound):
     phasesCount = [0] * len(phases)
     for block in splitFile:
@@ -136,12 +158,9 @@ def count(phases, splitFile, notFound):
                     break
     return phasesCount
 
-def orderPhases(phases, phasesCount):
-    # criar uma lista de tuplas com as strings e as suas frequências
-    tuple = list(zip(phases, phasesCount))
-    # ordenar a lista de tuplas pela frequência (segundo item da tupla)
-    orderlyTuple = sorted(tuple, key=lambda x: x[1], reverse=True)
-    # criar uma lista ordenada apenas das strings
+def sortPhases(phases, phasesCount):
+    tupleList = list(zip(phases, phasesCount))
+    orderlyTuple = sorted(tupleList, key=lambda x: x[1], reverse=True)
     phasesOrderly = [t[0] for t in orderlyTuple]
     return phasesOrderly
 
@@ -161,14 +180,15 @@ def main():
         split = lines.split("<Placemark>")
         
         phasesTypes(split, notFound, phases)
+        phases.sort()
         phasesCount = count(phases, split, notFound)
         print(phases)
         print(phasesCount)
-        phases = orderPhases(phases, phasesCount)
-        print(phases)
+        #phases = sortPhases(phases, phasesCount)
+        #print(phases)
         
-        kml = write(phases, split, notFound)
-        
+        kml = test2(phases, split, notFound)
+
         with open(filePath, "w", encoding='utf8') as f:
             f.write(kml) 
         
