@@ -65,24 +65,24 @@ def boundPhase(block, notFound):
         notFound.append(block)
     return start, end
 
-'''
-Procedure to generate a list of phase types, each file has different types
-Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase, and list of phases
-Change the list of phases declared in main()
-'''
-def phasesTypes(splitFile, notFound, phases):
-    for block in splitFile:
-        if block!=splitFile[0]:
-            start, end = boundPhase(block, notFound)
-            try:
-                phases.index(block[start:end])
-            except:
-                phases.append(block[start:end])
+# '''
+# Procedure to generate a list of phase types
+# Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase, and list of phases
+# Change the list of phases declared in main()
+# '''
+# def phasesTypes(splitFile, notFound, phases):
+#     for block in splitFile:
+#         if block!=splitFile[0]:
+#             start, end = boundPhase(block, notFound)
+#             try:
+#                 phases.index(block[start:end])
+#             except:
+#                 phases.append(block[start:end])
 
 '''
-Procedure to generate a list of phase types, each file has different types
-Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase, and list of phases
-Change the list of phases declared in main()
+Function to generate a list of phases types
+Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase
+Returns a list of phases types
 '''
 def phasesTypesV2(splitFile, notFound):
     setPhases = set()
@@ -90,9 +90,7 @@ def phasesTypesV2(splitFile, notFound):
         if block!=splitFile[0]:
             start, end = boundPhase(block, notFound)
             setPhases.add(block[start:end])
-    print(setPhases)
     phases = list(setPhases)
-    print(phases)
     return phases
 
 '''
