@@ -80,6 +80,22 @@ def phasesTypes(splitFile, notFound, phases):
                 phases.append(block[start:end])
 
 '''
+Procedure to generate a list of phase types, each file has different types
+Receives the file already splitted, notFound list, to pass as a parameter when calling boundPhase, and list of phases
+Change the list of phases declared in main()
+'''
+def phasesTypesV2(splitFile, notFound):
+    setPhases = set()
+    for block in splitFile:
+        if block!=splitFile[0]:
+            start, end = boundPhase(block, notFound)
+            setPhases.add(block[start:end])
+    print(setPhases)
+    phases = list(setPhases)
+    print(phases)
+    return phases
+
+'''
 Function to write the final .kml file
 Receives a list of phases types , the file already splitted, and notFound list, to pass as a parameter when calling boundPhase
 Returns a kml string containing the result of the algorithm
@@ -181,7 +197,7 @@ def main():
         
         split = lines.split("<Placemark>")
         
-        phasesTypes(split, notFound, phases)
+        phases = phasesTypesV2(split, notFound)
         phases.sort()
         phasesCount = count(phases, split, notFound)
         print(phases)
