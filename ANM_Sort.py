@@ -189,10 +189,10 @@ def main():
         #phases = sortPhases(phases, phasesCount)
         #print(phases)
         
-        kml = write(phases, split, notFound)
+        kml = test2(phases, split, notFound)
 
         with open(filePath, "w", encoding='utf8') as f:
-            f.test(kml) 
+            f.write(kml) 
         
         if len(notFound) != 0:
             print("Some not found")
