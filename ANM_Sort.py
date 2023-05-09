@@ -6,6 +6,7 @@ from tkinter import filedialog
 import os
 from zipfile import ZipFile
 import time
+import keyboard
 
 '''
 Function to generate a file dialog to select the right file to be open
@@ -220,3 +221,5 @@ if __name__ == '__main__':
     end = time.time()
     executeTime = end - begin
     print(f'Time to execute in seconds: {executeTime: .5f}')
+    print('Press enter to continue...')
+    keyboard.wait("enter")
