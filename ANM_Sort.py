@@ -152,6 +152,7 @@ def test2(phases, splitFile, notFound):
             if phases[j] == block[start:end]:
                 kmlList[j] = kmlList[j] + '<Placemark>'
                 kmlList[j] = kmlList[j] + block
+                break
     kmlResult = result(kmlList, splitFile, last, phases)
     return kmlResult
 
