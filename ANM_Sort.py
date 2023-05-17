@@ -7,6 +7,7 @@ import os
 from zipfile import ZipFile
 import time
 import keyboard
+from tqdm import tqdm
 
 '''
 Function to generate a file dialog to select the right file to be open
@@ -58,7 +59,7 @@ def boundPhase(block, notFound):
     start = block.find("<td>Fase</td>")
     start = start + 19
     end = start +1
-    if start!=-1:
+    if start!=18:
         while block[start:end].find("<") == -1:
             end = end + 1
         end = end - 1
@@ -142,7 +143,7 @@ def test(phases, splitFile, notFound):
 
 def test2(phases, splitFile, notFound):
     kmlList = [''] * len(phases)
-    for i in range(1, len(splitFile)):
+    for i in tqdm(range(1, len(splitFile))):
         block = splitFile[i]
         if i == len(splitFile) - 1:
             last = block.split("</Placemark>")
