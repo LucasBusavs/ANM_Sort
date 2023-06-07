@@ -73,6 +73,8 @@ def main():
                     end = i
                     seTuple = (start, end)
                     dictIndex[seTuple] = value
+        dictOrder = sorted(dictIndex.items(), key=lambda x: x[1])
+        print(dictOrder)
     else:
         print("No file selected")
     return time.time() - begin
