@@ -49,9 +49,22 @@ def kmzConverter(filePath):
     print('KMZ converted successfully')
     return fileName[0] + ".kml"
 
+def write(dictSorted, phases, lines):
+    i = 0
+    kml = ""
+    writeList = [len(phases)]
+    phase = dictSorted[0][1]
+    for process in dictSorted:
+        start, end = process[0]
+        end = end + 1
+        if phase == process[1]:
+            kml = lines[start:end]
+        else:
+            ...
+
 def main():
     dictIndex = {}
-    j = 0
+    aux = set()
     start = 0
     end = 0
     value = ''
@@ -69,12 +82,16 @@ def main():
                     start = i
                 elif lines[i] == '<td>Fase</td>\n':
                     value = lines[i+2]
+                    value = value[4:-6]
+                    aux.add(value)
+                    phases = list(aux)
+                    phases.sort()
                 elif lines[i] == '    </Placemark>\n':
                     end = i
                     seTuple = (start, end)
                     dictIndex[seTuple] = value
-        dictOrder = sorted(dictIndex.items(), key=lambda x: x[1])
-        print(dictOrder)
+        dictSorted = sorted(dictIndex.items(), key=lambda x: x[1])
+        write(dictSorted, phases, lines)
     else:
         print("No file selected")
     return time.time() - begin
