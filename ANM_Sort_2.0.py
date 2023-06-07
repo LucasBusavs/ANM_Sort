@@ -73,8 +73,6 @@ def main():
                     end = i
                     seTuple = (start, end)
                     dictIndex[seTuple] = value
-                    print(dictIndex)
-        print(j)
     else:
         print("No file selected")
     return time.time() - begin
