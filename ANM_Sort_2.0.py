@@ -68,9 +68,20 @@ def listToWrite(dictSorted, phases, lines):
     writeList[i] = kml
     return writeList
 
-def write(listToWrite, filePath):
+def write(listToWrite, filePath, phases):
     
-    ...
+    with open(filePath, "r", encoding='utf8') as f:
+        file = f.read()
+    
+    begin = file.split("<Placemark>")[0]
+    end = file.split("</Placemark>")[-1]
+    finalKml = begin
+    for i in range(len(listToWrite)):
+        finalKml = finalKml + (f'\t\t<Folder>\n\t\t\t<name>{phases[i]}</name>\n') + listToWrite[i] + '</Folder>\n'
+    finalKml = finalKml + end
+    
+    with open(filePath, "w", encoding='utf8') as f:
+        f.write(finalKml)
 
 def main():
     dictIndex = {}
@@ -95,14 +106,15 @@ def main():
                 value = lines[i+2]
                 value = value[4:-6]
                 aux.add(value)
-                phases = list(aux)
-                phases.sort()
             elif lines[i] == '    </Placemark>\n':
                 end = i
                 seTuple = (start, end)
                 dictIndex[seTuple] = value
+        phases = list(aux)
+        phases.sort()
         dictSorted = sorted(dictIndex.items(), key=lambda x: x[1])
         writeList = listToWrite(dictSorted, phases, lines)
+        write(writeList, filePath, phases)
     else:
         print("No file selected")
     return time.time() - begin
