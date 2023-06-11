@@ -6,6 +6,9 @@
 #define TAMANHO_INCREMENTO 10000
 
 int main() {
+    int ultLinha = 0;
+    int priLinha = 0;
+    int flag = 0;
     // Abrir o arquivo para leitura
     FILE *arquivo = fopen("PB.kml", "r");
     if (arquivo == NULL) {
@@ -66,17 +69,19 @@ int main() {
     }
     fclose(arquivo);
 
-    FILE *file = fopen("test.kml","w");
-    if (!file) {
-        printf("Erro ao abrir o arquivo.\n");
-        return 1;
-    }
     // Imprimir as linhas armazenadas no vetor
     for (int i = 0; i < num_linhas; i++) {
-        fputs(linhas[i], file);
-        printf("Linha %d: %s\n", i+1, linhas[i]);
+        //printf("Linha %d: %s\n", i+1, linhas[i]);
+        if(strcmp(linhas[i], "    </Placemark>\n") == 0){
+            ultLinha = i;
+        }
+        if(strcmp(linhas[i], "    <Placemark>\n") == 0 && !flag){
+            priLinha = i;
+            flag = 1;
+        }
     }
-    fclose(file);
+    printf("%d\n", ultLinha);
+    printf("%d\n", priLinha);
 
     // Liberar a memória alocada
     for (int i = 0; i < num_linhas; i++) {
