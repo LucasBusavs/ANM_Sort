@@ -27,9 +27,6 @@ int main() {
 
     // Ler o arquivo linha por linha
     while (fgets(buffer, sizeof(buffer), arquivo) != NULL) {
-        // Remover o caractere de nova linha (\n) do final da linha
-        //buffer[strcspn(buffer, "\n")] = '\0';
-
         // Alocar memória para a linha
         linhas[num_linhas] = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
         if (linhas[num_linhas] == NULL) {
@@ -53,7 +50,7 @@ int main() {
         if (num_linhas >= tamanho_vetor) {
             tamanho_vetor += TAMANHO_INCREMENTO;
             linhas = (char **) realloc(linhas, tamanho_vetor * sizeof(char *));
-            if (linhas == NULL) {
+            if (!linhas) {
                 printf("Erro ao realocar memória.\n");
                 fclose(arquivo);
                 
@@ -67,8 +64,6 @@ int main() {
             }
         }
     }
-
-    // Fechar o arquivo
     fclose(arquivo);
 
     FILE *file = fopen("test.kml","w");

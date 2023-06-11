@@ -49,12 +49,35 @@ def kmzConverter(filePath):
     print('KMZ converted successfully')
     return fileName[0] + ".kml"
 
-def listToWrite(dictSorted, phases, lines):
+def phasesIndex(lines):
+    dictIndex = {}
+    phases = []
+    start = 0
+    end = 0
+    value = ''
+    aux = set()
+    for i in tqdm(range(len(lines))):
+        if lines[i] == '    <Placemark>\n':
+            start = i
+        elif lines[i] == '<td>Fase</td>\n':
+            value = lines[i+2]
+            value = value[4:-6]
+            aux.add(value)
+        elif lines[i] == '    </Placemark>\n':
+            end = i + 1
+            seTuple = (start, end)
+            dictIndex[seTuple] = value
+    phases = list(aux)
+    phases.sort()
+    dictSorted = sorted(dictIndex.items(), key=lambda x: x[1])
+    return phases, dictSorted
+
+def listToWrite(phasesIndexed, phases, lines):
     i = 0
     kml = ''
     writeList = ['']*len(phases)
-    phase = dictSorted[0][1]
-    for process in dictSorted:
+    phase = phasesIndexed[0][1]
+    for process in phasesIndexed:
         start, end = process[0]
         if phase == process[1]:
             kml = kml + ''.join(lines[start:end])
@@ -83,11 +106,8 @@ def write(listToWrite, filePath, phases):
         f.write(finalKml)
 
 def main():
-    dictIndex = {}
-    aux = set()
-    start = 0
-    end = 0
-    value = ''
+    phasesIndexed = []
+    phases = []
 
     filePath = fileDialog()
     begin = time.time()
@@ -98,21 +118,9 @@ def main():
         with open(filePath, "r", encoding='utf8') as f:
             lines = f.readlines()
 
-        for i in tqdm(range(len(lines))):
-            if lines[i] == '    <Placemark>\n':
-                start = i
-            elif lines[i] == '<td>Fase</td>\n':
-                value = lines[i+2]
-                value = value[4:-6]
-                aux.add(value)
-            elif lines[i] == '    </Placemark>\n':
-                end = i + 1
-                seTuple = (start, end)
-                dictIndex[seTuple] = value
-        phases = list(aux)
-        phases.sort()
-        dictSorted = sorted(dictIndex.items(), key=lambda x: x[1])
-        writeList = listToWrite(dictSorted, phases, lines)
+        phases, phasesIndexed = phasesIndex(lines)
+        print(phases)
+        writeList = listToWrite(phasesIndexed, phases, lines)
         write(writeList, filePath, phases)
     else:
         print("No file selected")
