@@ -15,8 +15,8 @@ Returns a string containing the selected file path
 '''
 def fileDialog():
     filetypes = (
-        ('Google Earth (.kmz)', '*.KMZ'),
         ('Google Earth (.kml)', '*.KML'),
+        ('Google Earth (.kmz)', '*.KMZ'),
     )
     
     root = tk.Tk()
@@ -49,18 +49,28 @@ def kmzConverter(filePath):
     print('KMZ converted successfully')
     return fileName[0] + ".kml"
 
-def write(dictSorted, phases, lines):
+def listToWrite(dictSorted, phases, lines):
     i = 0
-    kml = ""
-    writeList = [len(phases)]
+    kml = ''
+    writeList = ['']*len(phases)
     phase = dictSorted[0][1]
     for process in dictSorted:
         start, end = process[0]
         end = end + 1
         if phase == process[1]:
-            kml = lines[start:end]
+            kml = kml + ''.join(lines[start:end])
         else:
-            ...
+            writeList[i] = kml
+            i = i + 1
+            kml = ''
+            phase = process[1]
+            kml = kml + ''.join(lines[start:end])
+    writeList[i] = kml
+    return writeList
+
+def write(listToWrite, filePath):
+    
+    ...
 
 def main():
     dictIndex = {}
@@ -77,21 +87,22 @@ def main():
         
         with open(filePath, "r", encoding='utf8') as f:
             lines = f.readlines()
-            for i in range(len(lines)):
-                if lines[i] == '    <Placemark>\n':
-                    start = i
-                elif lines[i] == '<td>Fase</td>\n':
-                    value = lines[i+2]
-                    value = value[4:-6]
-                    aux.add(value)
-                    phases = list(aux)
-                    phases.sort()
-                elif lines[i] == '    </Placemark>\n':
-                    end = i
-                    seTuple = (start, end)
-                    dictIndex[seTuple] = value
+
+        for i in range(len(lines)):
+            if lines[i] == '    <Placemark>\n':
+                start = i
+            elif lines[i] == '<td>Fase</td>\n':
+                value = lines[i+2]
+                value = value[4:-6]
+                aux.add(value)
+                phases = list(aux)
+                phases.sort()
+            elif lines[i] == '    </Placemark>\n':
+                end = i
+                seTuple = (start, end)
+                dictIndex[seTuple] = value
         dictSorted = sorted(dictIndex.items(), key=lambda x: x[1])
-        write(dictSorted, phases, lines)
+        writeList = listToWrite(dictSorted, phases, lines)
     else:
         print("No file selected")
     return time.time() - begin
