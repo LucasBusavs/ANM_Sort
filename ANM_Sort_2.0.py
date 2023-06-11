@@ -73,6 +73,7 @@ def phasesIndex(lines):
     return phases, dictSorted
 
 def listToWrite(phasesIndexed, phases, lines):
+    phasesCount = [0]*len(phases)
     i = 0
     kml = ''
     writeList = ['']*len(phases)
@@ -81,13 +82,16 @@ def listToWrite(phasesIndexed, phases, lines):
         start, end = process[0]
         if phase == process[1]:
             kml = kml + ''.join(lines[start:end])
+            phasesCount[i] += 1
         else:
             writeList[i] = kml
             i = i + 1
             kml = ''
             phase = process[1]
             kml = kml + ''.join(lines[start:end])
+            phasesCount[i] += 1
     writeList[i] = kml
+    print(phasesCount)
     return writeList
 
 def write(listToWrite, filePath, phases):
