@@ -80,16 +80,13 @@ def listToWrite(phasesIndexed, phases, lines):
     phase = phasesIndexed[0][1]
     for process in phasesIndexed:
         start, end = process[0]
-        if phase == process[1]:
-            kml = kml + ''.join(lines[start:end])
-            phasesCount[i] += 1
-        else:
+        if phase != process[1]:
             writeList[i] = kml
             i = i + 1
             kml = ''
             phase = process[1]
-            kml = kml + ''.join(lines[start:end])
-            phasesCount[i] += 1
+        kml = kml + ''.join(lines[start:end])
+        phasesCount[i] += 1
     writeList[i] = kml
     print(phasesCount)
     return writeList
@@ -118,7 +115,7 @@ def main():
     if filePath != '':
         if filePath.endswith(".kmz"):
             filePath = kmzConverter(filePath)
-        
+
         with open(filePath, "r", encoding='utf8') as f:
             lines = f.readlines()
 
