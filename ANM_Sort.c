@@ -81,12 +81,11 @@ int main() {
             flag = 1;
         }
         if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
-            fases++;
+            printf("Linha %d: %s\n", i+2, linhas[i+1]);
         }
     }
     printf("%d\n", ultLinha);
     printf("%d\n", priLinha);
-    printf("%d\n", fases);
 
     // Liberar a memória alocada
     for (int i = 0; i < num_linhas; i++) {
