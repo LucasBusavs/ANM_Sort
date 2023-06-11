@@ -56,7 +56,6 @@ def listToWrite(dictSorted, phases, lines):
     phase = dictSorted[0][1]
     for process in dictSorted:
         start, end = process[0]
-        end = end + 1
         if phase == process[1]:
             kml = kml + ''.join(lines[start:end])
         else:
@@ -76,7 +75,7 @@ def write(listToWrite, filePath, phases):
     begin = file.split("<Placemark>")[0]
     end = file.split("</Placemark>")[-1]
     finalKml = begin
-    for i in range(len(listToWrite)):
+    for i in tqdm(range(len(listToWrite))):
         finalKml = finalKml + (f'\t\t<Folder>\n\t\t\t<name>{phases[i]}</name>\n') + listToWrite[i] + '</Folder>\n'
     finalKml = finalKml + end
     
@@ -99,7 +98,7 @@ def main():
         with open(filePath, "r", encoding='utf8') as f:
             lines = f.readlines()
 
-        for i in range(len(lines)):
+        for i in tqdm(range(len(lines))):
             if lines[i] == '    <Placemark>\n':
                 start = i
             elif lines[i] == '<td>Fase</td>\n':
@@ -107,7 +106,7 @@ def main():
                 value = value[4:-6]
                 aux.add(value)
             elif lines[i] == '    </Placemark>\n':
-                end = i
+                end = i + 1
                 seTuple = (start, end)
                 dictIndex[seTuple] = value
         phases = list(aux)
