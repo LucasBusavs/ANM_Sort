@@ -9,6 +9,7 @@ int main() {
     int ultLinha = 0;
     int priLinha = 0;
     int flag = 0;
+    int fases = 0;
     // Abrir o arquivo para leitura
     FILE *arquivo = fopen("PB.kml", "r");
     if (arquivo == NULL) {
@@ -79,9 +80,13 @@ int main() {
             priLinha = i;
             flag = 1;
         }
+        if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
+            fases++;
+        }
     }
     printf("%d\n", ultLinha);
     printf("%d\n", priLinha);
+    printf("%d\n", fases);
 
     // Liberar a memória alocada
     for (int i = 0; i < num_linhas; i++) {
