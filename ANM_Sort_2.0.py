@@ -78,7 +78,7 @@ def listToWrite(phasesIndexed, phases, lines):
     kml = ''
     writeList = ['']*len(phases)
     phase = phasesIndexed[0][1]
-    for process in phasesIndexed:
+    for process in tqdm(phasesIndexed):
         start, end = process[0]
         if phase != process[1]:
             writeList[i] = kml
