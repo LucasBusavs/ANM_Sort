@@ -5,6 +5,12 @@
 #define TAMANHO_INICIAL 10000
 #define TAMANHO_INCREMENTO 10000
 
+struct Index{
+    int start;
+    int end;
+    char *fase;
+};
+
 int main() {
     int ultLinha = 0;
     int priLinha = 0;
@@ -73,9 +79,11 @@ int main() {
     // Imprimir as linhas armazenadas no vetor
     for (int i = 0; i < num_linhas; i++) {
         //printf("Linha %d: %s\n", i+1, linhas[i]);
+        //Encontra ultima linha antes de fechar o arquivo
         if(strcmp(linhas[i], "    </Placemark>\n") == 0){
             ultLinha = i;
         }
+        //Encontra a linha anterior aos processos
         if(strcmp(linhas[i], "    <Placemark>\n") == 0 && !flag){
             priLinha = i;
             flag = 1;
