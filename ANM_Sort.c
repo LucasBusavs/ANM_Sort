@@ -8,7 +8,7 @@
 struct Index{
     int start;
     int end;
-    char *fase;
+    char fase[38];
 };
 
 int main() {
@@ -16,6 +16,11 @@ int main() {
     int priLinha = 0;
     int flag = 0;
     int fases = 0;
+    int j = 4;
+    int qntProcessos = 0;
+    int tamanhoIndex = 1;
+    struct Index* listaIndex =  malloc(tamanhoIndex * sizeof(struct Index));
+
     // Abrir o arquivo para leitura
     FILE *arquivo = fopen("PB.kml", "r");
     if (arquivo == NULL) {
@@ -42,13 +47,13 @@ int main() {
         if (linhas[num_linhas] == NULL) {
             printf("Erro ao alocar memória.\n");
             fclose(arquivo);
-            
+
             // Liberar a memória alocada anteriormente
             for (int i = 0; i < num_linhas; i++) {
                 free(linhas[i]);
             }
             free(linhas);
-            
+
             return 1;
         }
 
@@ -63,13 +68,13 @@ int main() {
             if (!linhas) {
                 printf("Erro ao realocar memória.\n");
                 fclose(arquivo);
-                
+
                 // Liberar a memória alocada anteriormente
                 for (int i = 0; i < num_linhas; i++) {
                     free(linhas[i]);
                 }
                 free(linhas);
-                
+
                 return 1;
             }
         }
@@ -78,22 +83,49 @@ int main() {
 
     // Imprimir as linhas armazenadas no vetor
     for (int i = 0; i < num_linhas; i++) {
-        //printf("Linha %d: %s\n", i+1, linhas[i]);
-        //Encontra ultima linha antes de fechar o arquivo
-        if(strcmp(linhas[i], "    </Placemark>\n") == 0){
-            ultLinha = i;
-        }
         //Encontra a linha anterior aos processos
-        if(strcmp(linhas[i], "    <Placemark>\n") == 0 && !flag){
-            priLinha = i;
-            flag = 1;
+        if(strcmp(linhas[i], "    <Placemark>\n") == 0){
+            qntProcessos++;
+            if(!flag){
+                priLinha = i;
+                flag = 1;
+            }
+            listaIndex[tamanhoIndex - 1].start = i;
         }
-        if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
-            printf("Linha %d: %s\n", i+2, linhas[i+1]);
+        else if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
+            while(linhas[i+1][j] != '<'){
+                listaIndex[tamanhoIndex - 1].fase[j-4] = linhas[i+1][j];
+                j++;
+            }
+            listaIndex[tamanhoIndex - 1].fase[j-4] = '\0';
+            j = 4;
+            printf("\n");
+        }
+        //Encontra ultima linha antes de fechar o arquivo
+        else if(strcmp(linhas[i], "    </Placemark>\n") == 0){
+            ultLinha = i;
+            listaIndex[tamanhoIndex - 1].end = i;
+            tamanhoIndex++;
+            int* novaLista = realloc(listaIndex, tamanhoIndex * sizeof(struct Index));
+            if(!novaLista){
+                printf("Erro ao realocar memória!\n");
+                free(listaIndex);
+                return 1;
+            }
+            listaIndex = novaLista;
         }
     }
+
+    for(int i=0;i<tamanhoIndex-1;i++){
+        printf("Start %d: %d\n",i+1,listaIndex[i].start);
+        printf("Fase %d: %s\n",i+1,listaIndex[i].fase);
+        printf("End %d: %d\n",i+1,listaIndex[i].end);
+        printf("\n");
+    }
+
     printf("%d\n", ultLinha);
     printf("%d\n", priLinha);
+    printf("%d\n", qntProcessos);
 
     // Liberar a memória alocada
     for (int i = 0; i < num_linhas; i++) {
