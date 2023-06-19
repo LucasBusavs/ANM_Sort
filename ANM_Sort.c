@@ -11,6 +11,10 @@ struct Index{
     char fase[38];
 };
 
+int compara(struct Index* a, struct Index* b){
+    return strcmp(a->fase, b->fase);
+}
+
 int main() {
     int ultLinha = 0;
     int priLinha = 0;
@@ -116,13 +120,15 @@ int main() {
         }
     }
 
+    qsort(listaIndex, tamanhoIndex - 1, sizeof(struct Index), compara);
+
     for(int i=0;i<tamanhoIndex-1;i++){
         printf("Start %d: %d\n",i+1,listaIndex[i].start);
         printf("Fase %d: %s\n",i+1,listaIndex[i].fase);
         printf("End %d: %d\n",i+1,listaIndex[i].end);
         printf("\n");
     }
-
+    
     printf("%d\n", ultLinha);
     printf("%d\n", priLinha);
     printf("%d\n", qntProcessos);
