@@ -119,6 +119,7 @@ int main() {
             listaIndex = novaLista;
         }
     }
+    ultLinha ++;
 
     qsort(listaIndex, tamanhoIndex - 1, sizeof(struct Index), compara);
 
@@ -148,12 +149,26 @@ int main() {
     }
 
     for(int i=0;i<tamanhoQntd;i++){
-        printf("%d\n", qntd[i]);
+        printf("%d ", qntd[i]);
     }
-
-    printf("%d\n", ultLinha);
-    printf("%d\n", priLinha);
+    printf("\n%d\n", ultLinha);
+    printf("%d\n", num_linhas);
     printf("%d\n", qntProcessos);
+
+    FILE* newFile = fopen("PB-NEW.kml", "w");
+    if (newFile == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return 1;
+    }
+    /*
+    for(int i=0;i<priLinha;i++){
+        fprintf(newFile,"%s",linhas[i]);
+    }
+    for(int i=ultLinha;i<num_linhas;i++){
+        fprintf(newFile,"%s",linhas[i]);
+    }
+    */
+    fclose(newFile);
 
     // Liberar a memória alocada
     for (int i = 0; i < num_linhas; i++) {
