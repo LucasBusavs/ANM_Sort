@@ -22,7 +22,9 @@ int main() {
     int j = 4;
     int qntProcessos = 0;
     int tamanhoIndex = 1;
+    int tamanhoQntd = 1;
     struct Index* listaIndex =  malloc(tamanhoIndex * sizeof(struct Index)); 
+    int* qntd = malloc(tamanhoQntd * sizeof(int));
 
     // Abrir o arquivo para leitura
     FILE *arquivo = fopen("PB.kml", "r");
@@ -84,7 +86,6 @@ int main() {
     }
     fclose(arquivo);
 
-    // Imprimir as linhas armazenadas no vetor
     for (int i = 0; i < num_linhas; i++) {
         //Encontra a linha anterior aos processos
         if(strcmp(linhas[i], "    <Placemark>\n") == 0){
@@ -121,11 +122,33 @@ int main() {
 
     qsort(listaIndex, tamanhoIndex - 1, sizeof(struct Index), compara);
 
+    qntd[tamanhoQntd - 1] = 1;
+
     for(int i=0;i<tamanhoIndex-1;i++){
         printf("Start %d: %d\n",i+1,listaIndex[i].start);
         printf("Fase %d: %s\n",i+1,listaIndex[i].fase);
         printf("End %d: %d\n",i+1,listaIndex[i].end);
         printf("\n");
+        if(i>0){
+            if(!strcmp(listaIndex[i].fase, listaIndex[i-1].fase)){
+                qntd[tamanhoQntd - 1]++;
+            }
+            else{
+                tamanhoQntd++;
+                int* novaQntd = realloc(qntd, tamanhoQntd * sizeof(int));
+                if(!novaQntd){
+                    printf("Erro ao realocar memória!\n");
+                    free(qntd);
+                    return 1;
+                }
+                qntd = novaQntd;
+                qntd[tamanhoQntd - 1] = 1;
+            }
+        }
+    }
+
+    for(int i=0;i<tamanhoQntd;i++){
+        printf("%d\n", qntd[i]);
     }
 
     printf("%d\n", ultLinha);
@@ -138,6 +161,7 @@ int main() {
     }
     free(linhas);
     free(listaIndex);
+    free(qntd);
 
     return 0;
 }
