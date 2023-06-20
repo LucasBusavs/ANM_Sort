@@ -19,11 +19,10 @@ int main() {
     int ultLinha = 0;
     int priLinha = 0;
     int flag = 0;
-    int fases = 0;
     int j = 4;
     int qntProcessos = 0;
     int tamanhoIndex = 1;
-    struct Index* listaIndex =  malloc(tamanhoIndex * sizeof(struct Index));
+    struct Index* listaIndex =  malloc(tamanhoIndex * sizeof(struct Index)); 
 
     // Abrir o arquivo para leitura
     FILE *arquivo = fopen("PB.kml", "r");
@@ -128,7 +127,7 @@ int main() {
         printf("End %d: %d\n",i+1,listaIndex[i].end);
         printf("\n");
     }
-    
+
     printf("%d\n", ultLinha);
     printf("%d\n", priLinha);
     printf("%d\n", qntProcessos);
@@ -138,6 +137,7 @@ int main() {
         free(linhas[i]);
     }
     free(linhas);
+    free(listaIndex);
 
     return 0;
 }
