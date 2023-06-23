@@ -33,8 +33,29 @@ int main() {
     int j = 4, i;
     int qntProcess = 0;
     int sizeIndex = 1, sizeQnt = 1;
-    struct Index* listaIndex =  malloc(sizeIndex * sizeof(struct Index)); 
-    int* qntd = malloc(sizeQnt * sizeof(int));
+    int linesSize = INITIAL_SIZE;
+    int numLines = 0;
+    char buffer[1024]; //Maximum length of the line 
+
+    //********Alocating memory**********
+    //Memory allocation for a matrix containing the file's lines, line by line
+    char** lines = (char **) malloc(linesSize * sizeof(char *));
+    if (!lines) {
+        printf("Error allocating memory.\n");
+        return 1;
+    }
+    
+    struct Index* listIndex = (struct Index*) malloc(sizeIndex * sizeof(struct Index)); 
+    if (!listIndex) {
+        printf("Error allocating memory.\n");
+        return 1;
+    }
+    
+    int* qnt = (int*) malloc(sizeQnt * sizeof(int));
+    if (!qnt) {
+        printf("Error allocating memory.\n");
+        return 1;
+    }
 
     //Opening file for reading
     FILE *f = fopen("PB.kml", "r");
@@ -43,155 +64,137 @@ int main() {
         return 1;
     }
 
-    // Alocar o vetor inicial com tamanho inicial
-    char **linhas = (char **) malloc(INITIAL_SIZE * sizeof(char *));
-    if (!linhas) {
-        printf("Erro ao alocar memória.\n");
-        fclose(f);
-        return 1;
-    }
-
-    int tamanho_vetor = INITIAL_SIZE;
-    int num_linhas = 0;
-    char buffer[1024]; // Tamanho máximo da linha
-
     //Reading file line by line
     while (fgets(buffer, sizeof(buffer), f) != NULL) {
-        // Alocar memória para a linha
-        linhas[num_linhas] = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
-        if (!linhas[num_linhas]) {
-            printf("Erro ao alocar memória.\n");
+        //Allocate memory for lines
+        lines[numLines] = (char *) malloc((strlen(buffer) + 1) * sizeof(char));
+        if (!lines[numLines]) {
+            printf("Error allocating memory.\n");
             fclose(f);
-
-            // Liberar a memória alocada anteriormente
-            for (i = 0; i < num_linhas; i++) {
-                free(linhas[i]);
+            //Free previously allocated memory
+            for (i = 0; i < numLines; i++) {
+                free(lines[i]);
             }
-            free(linhas);
-
+            free(lines);
             return 1;
         }
 
-        // Copiar a linha para o vetor
-        strcpy(linhas[num_linhas], buffer);
-        num_linhas++;
+        //Coping line into the array of lines
+        strcpy(lines[numLines], buffer);
+        numLines++;
 
-        // Verificar se o vetor precisa ser realocado para acomodar mais linhas
-        if (num_linhas >= tamanho_vetor) {
-            tamanho_vetor += INCREMENT_SIZE;
-            linhas = (char **) realloc(linhas, tamanho_vetor * sizeof(char *));
-            if (!linhas) {
-                printf("Erro ao realocar memória.\n");
+        //Check if lines needs to be reallocated
+        if (numLines >= linesSize) {
+            linesSize += INCREMENT_SIZE;
+            lines = (char **) realloc(lines, linesSize * sizeof(char *));
+            if (!lines) {
+                printf("Error reallocating memory.\n");
                 fclose(f);
-
-                // Liberar a memória alocada anteriormente
-                for (int i = 0; i < num_linhas; i++) {
-                    free(linhas[i]);
+                //Free previously allocated memory
+                for (int i = 0; i < numLines; i++) {
+                    free(lines[i]);
                 }
-                free(linhas);
-
+                free(lines);
                 return 1;
             }
         }
     }
     fclose(f);
+    //Finished reading the file
 
-    for (i = 0; i < num_linhas; i++) {
-        //Encontra a linha anterior aos processos
-        if(strcmp(linhas[i], "    <Placemark>\n") == 0){
+    //Generate the listIndex of all mining processes
+    for (i = 0; i < numLines; i++) {
+        if(strcmp(lines[i], "    <Placemark>\n") == 0){
             qntProcess++;
             if(!flag){
                 firstLine = i;
                 flag = 1;
             }
-            listaIndex[sizeIndex - 1].start = i;
+            listIndex[sizeIndex - 1].start = i;
         }
-        else if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
-            while(linhas[i+1][j] != '<'){
-                listaIndex[sizeIndex - 1].phaseType[j-4] = linhas[i+1][j];
+        else if(strcmp(lines[i], "<td>Fase</td>\r\n") == 0){
+            while(lines[i+1][j] != '<'){
+                listIndex[sizeIndex - 1].phaseType[j-4] = lines[i+1][j];
                 j++;
             }
-            listaIndex[sizeIndex - 1].phaseType[j-4] = '\0';
+            listIndex[sizeIndex - 1].phaseType[j-4] = '\0';
             j = 4;
         }
-        else if(strcmp(linhas[i], "    </Placemark>\n") == 0){
-            lastLine = i;
-            listaIndex[sizeIndex - 1].end = i;
-            int* novaLista = realloc(listaIndex, ++sizeIndex * sizeof(struct Index));
-            if(!novaLista){
-                printf("Erro ao realocar memória!\n");
-                free(listaIndex);
+        else if(strcmp(lines[i], "    </Placemark>\n") == 0){
+            lastLine = i + 1;
+            listIndex[sizeIndex - 1].end = i;
+            listIndex = realloc(listIndex, ++sizeIndex * sizeof(struct Index));
+            if(!listIndex){
+                printf("Error reallocating memory.\n");
+                free(listIndex);
                 return 1;
             }
-            listaIndex = novaLista;
-        }
-    }
-    lastLine ++;
-
-    qsort(listaIndex, qntProcess, sizeof(struct Index), compare);
-
-    qntd[sizeQnt - 1] = 1;
-
-    for(i = 0; i < qntProcess; i++){
-        if(i>0){
-            if(!strcmp(listaIndex[i].phaseType, listaIndex[i-1].phaseType)){
-                qntd[sizeQnt - 1]++;
-            }
-            else{
-                sizeQnt++;
-                int* novaQntd = realloc(qntd, sizeQnt * sizeof(int));
-                if(!novaQntd){
-                    printf("Erro ao realocar memória!\n");
-                    free(qntd);
-                    return 1;
-                }
-                qntd = novaQntd;
-                qntd[sizeQnt - 1] = 1;
-            }
         }
     }
 
+    //Quick sorting lisIndex alphabetically, by phaseType
+    qsort(listIndex, qntProcess, sizeof(struct Index), compare);
+
+    //Counting the quantity of each phaseType in the file
+    qnt[sizeQnt - 1] = 1;   //Define first position equal to 1
+    for(i = 1; i < qntProcess; i++){
+        if(!strcmp(listIndex[i].phaseType, listIndex[i-1].phaseType)){
+            qnt[sizeQnt - 1]++;
+        }
+        else{
+            //printf("%d\n",qnt[sizeQnt - 1]);
+            qnt = realloc(qnt, ++sizeQnt * sizeof(int));
+            if(!qnt){
+                printf("Error reallocating memory.\n");
+                free(qnt);
+                return 1;
+            }
+            qnt[sizeQnt - 1] = 1;
+        }
+    }
+
+    //Overwrinting the same file
     FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
         printf("Error opening file.\n");
         return 1;
     }
 
+    //Writing the begining of the file, like the old one
     for(i = 0; i < firstLine; i++){
-        fprintf(newFile,"%s",linhas[i]);
+        fprintf(newFile,"%s",lines[i]);
     }
 
-    int aux2 = 0;
-    int aux = 0;
-    fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listaIndex[aux].phaseType);
+    //Writing the middle of the file, creating a folder for every phaseType
+    int aux = 0, aux2 = 0;
+    fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[aux].phaseType);
     for(i = 0; i < qntProcess; i++){
-        if(qntd[aux] == aux2){
+        if(qnt[aux] == aux2){
             aux2 = 0;
             aux++;
             fprintf(newFile,"</Folder>\n");
-            fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listaIndex[i].phaseType);
+            fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[i].phaseType);
         }
-        for(int j = listaIndex[i].start; j <= listaIndex[i].end; j++){
-            fprintf(newFile, "%s",linhas[j]);
+        for(int j = listIndex[i].start; j <= listIndex[i].end; j++){
+            fprintf(newFile, "%s",lines[j]);
         }
         aux2++;
     }
     fprintf(newFile,"</Folder>\n");
-    
-    for(i = lastLine; i < num_linhas; i++){
-        fprintf(newFile,"%s",linhas[i]);
-    }
-    
-    fclose(newFile);
-    printf("TERMINOU");
 
-    // Liberar a memória alocada
-    for (i = 0; i < num_linhas; i++) {
-        free(linhas[i]);
+    //Writing the end of the file, like the old one
+    for(i = lastLine; i < numLines; i++){
+        fprintf(newFile,"%s",lines[i]);
     }
-    free(linhas);
-    free(listaIndex);
-    free(qntd);
+    fclose(newFile);
+    printf("FINISHED");
+
+    for (i = 0; i < numLines; i++) {
+        free(lines[i]);
+    }
+    free(lines);
+    free(listIndex);
+    free(qnt);
 
     return 0;
 }
