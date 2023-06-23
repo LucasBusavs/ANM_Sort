@@ -31,10 +31,10 @@ int main() {
     int lastLine = 0, firstLine = 0;
     int flag = 0;
     int j = 4, i;
-    int qntProcessos = 0;
-    int tamanhoIndex = 1, tamanhoQntd = 1;
-    struct Index* listaIndex =  malloc(tamanhoIndex * sizeof(struct Index)); 
-    int* qntd = malloc(tamanhoQntd * sizeof(int));
+    int qntProcess = 0;
+    int sizeIndex = 1, sizeQnt = 1;
+    struct Index* listaIndex =  malloc(sizeIndex * sizeof(struct Index)); 
+    int* qntd = malloc(sizeQnt * sizeof(int));
 
     //Opening file for reading
     FILE *f = fopen("PB.kml", "r");
@@ -99,26 +99,25 @@ int main() {
     for (i = 0; i < num_linhas; i++) {
         //Encontra a linha anterior aos processos
         if(strcmp(linhas[i], "    <Placemark>\n") == 0){
-            qntProcessos++;
+            qntProcess++;
             if(!flag){
                 firstLine = i;
                 flag = 1;
             }
-            listaIndex[tamanhoIndex - 1].start = i;
+            listaIndex[sizeIndex - 1].start = i;
         }
         else if(strcmp(linhas[i], "<td>Fase</td>\r\n") == 0){
             while(linhas[i+1][j] != '<'){
-                listaIndex[tamanhoIndex - 1].phaseType[j-4] = linhas[i+1][j];
+                listaIndex[sizeIndex - 1].phaseType[j-4] = linhas[i+1][j];
                 j++;
             }
-            listaIndex[tamanhoIndex - 1].phaseType[j-4] = '\0';
+            listaIndex[sizeIndex - 1].phaseType[j-4] = '\0';
             j = 4;
         }
         else if(strcmp(linhas[i], "    </Placemark>\n") == 0){
             lastLine = i;
-            listaIndex[tamanhoIndex - 1].end = i;
-            tamanhoIndex++;
-            int* novaLista = realloc(listaIndex, tamanhoIndex * sizeof(struct Index));
+            listaIndex[sizeIndex - 1].end = i;
+            int* novaLista = realloc(listaIndex, ++sizeIndex * sizeof(struct Index));
             if(!novaLista){
                 printf("Erro ao realocar memória!\n");
                 free(listaIndex);
@@ -129,36 +128,28 @@ int main() {
     }
     lastLine ++;
 
-    qsort(listaIndex, tamanhoIndex - 1, sizeof(struct Index), compare);
+    qsort(listaIndex, qntProcess, sizeof(struct Index), compare);
 
-    qntd[tamanhoQntd - 1] = 1;
+    qntd[sizeQnt - 1] = 1;
 
-    for(i = 0; i < tamanhoIndex-1; i++){
+    for(i = 0; i < qntProcess; i++){
         if(i>0){
             if(!strcmp(listaIndex[i].phaseType, listaIndex[i-1].phaseType)){
-                qntd[tamanhoQntd - 1]++;
+                qntd[sizeQnt - 1]++;
             }
             else{
-                tamanhoQntd++;
-                int* novaQntd = realloc(qntd, tamanhoQntd * sizeof(int));
+                sizeQnt++;
+                int* novaQntd = realloc(qntd, sizeQnt * sizeof(int));
                 if(!novaQntd){
                     printf("Erro ao realocar memória!\n");
                     free(qntd);
                     return 1;
                 }
                 qntd = novaQntd;
-                qntd[tamanhoQntd - 1] = 1;
+                qntd[sizeQnt - 1] = 1;
             }
         }
     }
-
-    /*
-    for(int i=0;i<tamanhoQntd;i++){
-        printf("%d ", qntd[i]);
-    }
-    */
-    //printf("\n%d\n", qntProcessos);
-    //printf("%d\n", tamanhoIndex);
 
     FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
@@ -173,7 +164,7 @@ int main() {
     int aux2 = 0;
     int aux = 0;
     fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listaIndex[aux].phaseType);
-    for(i = 0; i < tamanhoIndex-1; i++){
+    for(i = 0; i < qntProcess; i++){
         if(qntd[aux] == aux2){
             aux2 = 0;
             aux++;
