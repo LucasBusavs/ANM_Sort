@@ -32,7 +32,7 @@ int readLines(int* numLines, char*** lines){
     }
     
     //Opening file for reading
-    FILE *f = fopen("PB.kml", "r");
+    FILE *f = fopen("MG.kml", "r");
     if (!f) {
         printf("Error opening file.\n");
         return 1;
@@ -160,7 +160,7 @@ int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Inde
     int i;
     int aux = 0, aux2 = 0;
 
-    FILE* newFile = fopen("PB.kml", "w");
+    FILE* newFile = fopen("MG.kml", "w");
     if (!newFile) {
         printf("Error opening file.\n");
         return 1;
@@ -237,8 +237,8 @@ int main(){
     free(qnt);
 
     clock_t end = clock();
-    double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
-    printf("\n%.4f seconds elapsed", elapsed);
-    
+    double executeTime = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("\nTime to execute: %.5f seconds", executeTime);
+
     return 0;
 }
