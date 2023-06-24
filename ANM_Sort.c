@@ -128,7 +128,7 @@ int compare(struct Index* a, struct Index* b){
     return strcmp(a->phaseType, b->phaseType);
 }
 
-int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
+int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess){
     int sizeQnt = 1;
     *qnt = (int*)malloc(sizeQnt * sizeof(int));
     if (!(*qnt)) {
@@ -194,7 +194,7 @@ int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Inde
     return 0;
 }
 
-int main() {
+int main(){
     int lastLine = 0, firstLine = 0;
     int qntProcess = 0;
     int numLines = 0;
@@ -203,10 +203,12 @@ int main() {
     struct Index* listIndex;
 
     if(readLines(&numLines, &lines)){
+        printf("Error reading lines\n");
         return 1;
     }
     
     if(indexing(&listIndex, numLines, &qntProcess, lines, &firstLine, &lastLine)){
+        printf("Error indexing the file\n");
         return 1;
     }
 
@@ -214,10 +216,12 @@ int main() {
     qsort(listIndex, qntProcess, sizeof(struct Index), compare);
 
     if(phaseFrequency(&qnt, listIndex, qntProcess)){
+        printf("Error calculating frequency of phases\n");
         return 1;
     }
 
     if(write(firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines)){
+        printf("Error writing file\n");
         return 1;
     }
 
