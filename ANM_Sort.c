@@ -7,6 +7,7 @@ C version to be more efficient
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 //Constants
 #define INITIAL_SIZE 10000
@@ -195,6 +196,7 @@ int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Inde
 }
 
 int main(){
+    clock_t start = clock();
     int lastLine = 0, firstLine = 0;
     int qntProcess = 0;
     int numLines = 0;
@@ -234,5 +236,9 @@ int main(){
     free(listIndex);
     free(qnt);
 
+    clock_t end = clock();
+    double elapsed = (double)(end - start) / CLOCKS_PER_SEC;
+    printf("\n%.4f seconds elapsed", elapsed);
+    
     return 0;
 }
