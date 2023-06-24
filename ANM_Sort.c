@@ -19,7 +19,7 @@ struct Index{
     char phaseType[38];  //Maximum size of phaseType type
 };
 
-void readLines(int* numLines, char*** lines){
+int readLines(int* numLines, char*** lines){
     int i;
     int linesSize = INITIAL_SIZE;
     char buffer[1024]; //Maximum length of the line
@@ -27,14 +27,14 @@ void readLines(int* numLines, char*** lines){
     *lines = (char **) malloc(linesSize * sizeof(char *));
     if (!(*lines)) {
         printf("Error allocating memory.\n");
-        return;
+        return 1;
     }
     
     //Opening file for reading
     FILE *f = fopen("PB.kml", "r");
     if (!f) {
         printf("Error opening file.\n");
-        return;
+        return 1;
     }
 
     //Reading file line by line
@@ -49,7 +49,7 @@ void readLines(int* numLines, char*** lines){
                 free(lines[i]);
             }
             free(lines);
-            return;
+            return 1;
         }
 
         //Coping line into the array of lines
@@ -68,15 +68,16 @@ void readLines(int* numLines, char*** lines){
                     free(lines[i]);
                 }
                 free(lines);
-                return;
+                return 1;
             }
         }
     }
     fclose(f);
+    return 0;
     //Finished reading the file
 }
 
-void indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lines, int* firstLine, int* lastLine){
+int indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lines, int* firstLine, int* lastLine){
     int j = 4;
     int flag = 0;
     int sizeIndex = 1;
@@ -84,7 +85,7 @@ void indexing(struct Index** listIndex, int numLines, int* qntProcess, char** li
     *listIndex = (struct Index*) malloc(sizeIndex * sizeof(struct Index)); 
     if (!(*listIndex)) {
         printf("Error allocating memory.\n");
-        return;
+        return 1;
     }
 
     //Generate the listIndex of all mining processes
@@ -112,10 +113,11 @@ void indexing(struct Index** listIndex, int numLines, int* qntProcess, char** li
             if(!(*listIndex)){
                 printf("Error reallocating memory.\n");
                 free(listIndex);
-                return;
+                return 1;
             }
         }
     }
+    return 0;
 }
 
 /*
@@ -126,12 +128,12 @@ int compare(struct Index* a, struct Index* b){
     return strcmp(a->phaseType, b->phaseType);
 }
 
-void phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
+int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
     int sizeQnt = 1;
     *qnt = (int*)malloc(sizeQnt * sizeof(int));
     if (!(*qnt)) {
         printf("Error allocating memory.\n");
-        return;
+        return 1;
     }
 
     (*qnt)[sizeQnt - 1] = 1;   //Define first position equal to 1
@@ -145,21 +147,22 @@ void phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
             *qnt = (int*)realloc(*qnt, sizeQnt * sizeof(int));
             if (!(*qnt)) {
                 printf("Error reallocating memory.\n");
-                return;
+                return 1;
             }
             (*qnt)[sizeQnt - 1] = 1;
         }
     }
+    return 0;
 }
 
-void write(int firstLine, int lastLine, int qntProcess, int numLines, struct Index* listIndex, int* qnt, char** lines){
+int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Index* listIndex, int* qnt, char** lines){
     int i;
     int aux = 0, aux2 = 0;
 
     FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
         printf("Error opening file.\n");
-        return;
+        return 1;
     }
 
     //Writing the begining of the file, like the old one
@@ -188,6 +191,7 @@ void write(int firstLine, int lastLine, int qntProcess, int numLines, struct Ind
         fprintf(newFile,"%s",lines[i]);
     }
     fclose(newFile);
+    return 0;
 }
 
 int main() {
@@ -198,18 +202,26 @@ int main() {
     char** lines;
     struct Index* listIndex;
 
-    readLines(&numLines, &lines);
+    if(readLines(&numLines, &lines)){
+        return 1;
+    }
     
-    indexing(&listIndex, numLines, &qntProcess, lines, &firstLine, &lastLine);
+    if(indexing(&listIndex, numLines, &qntProcess, lines, &firstLine, &lastLine)){
+        return 1;
+    }
 
     //Quick sorting lisIndex alphabetically, by phaseType
     qsort(listIndex, qntProcess, sizeof(struct Index), compare);
 
-    phaseFrequency(&qnt, listIndex, qntProcess);
+    if(phaseFrequency(&qnt, listIndex, qntProcess)){
+        return 1;
+    }
 
-    write(firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines);
+    if(write(firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines)){
+        return 1;
+    }
 
-    printf("FINISHED");
+    printf("\nFINISHED");
 
     for (int i = 0; i < numLines; i++) {
         free(lines[i]);
