@@ -20,6 +20,11 @@ struct Index{
     char phaseType[38];  //Maximum size of phaseType type
 };
 
+/*
+Description: Function to read the file line by line and store into a array
+Parameters: numLines and lines passed by reference, to be utilized in main function
+Returns: Return 0 if successful, 1 otherwise
+*/
 int readLines(int* numLines, char*** lines){
     int i;
     int linesSize = INITIAL_SIZE;
@@ -32,7 +37,7 @@ int readLines(int* numLines, char*** lines){
     }
     
     //Opening file for reading
-    FILE *f = fopen("MG.kml", "r");
+    FILE *f = fopen("PB.kml", "r");
     if (!f) {
         printf("Error opening file.\n");
         return 1;
@@ -75,9 +80,13 @@ int readLines(int* numLines, char*** lines){
     }
     fclose(f);
     return 0;
-    //Finished reading the file
 }
 
+/*
+Description: Function to create a list of all mining processes indexed by start and end lines.
+Parameters: Number of lines, lines of the file (Passed by value) // listIndex, qntProcess, firstLine, lastLine (Passed by reference)
+Returns: Return 0 if successful, 1 otherwise
+*/
 int indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lines, int* firstLine, int* lastLine){
     int j = 4;
     int flag = 0;
@@ -91,6 +100,7 @@ int indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lin
 
     //Generate the listIndex of all mining processes
     for (int i = 0; i < numLines; i++) {
+        //Start of a new process
         if(strcmp(lines[i], "    <Placemark>\n") == 0){
             (*qntProcess)++;
             if(!flag){
@@ -99,7 +109,9 @@ int indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lin
             }
             (*listIndex)[sizeIndex - 1].start = i;
         }
+        //Identify the phase type of the process
         else if(strcmp(lines[i], "<td>Fase</td>\r\n") == 0){
+            //Ignore <td> and </td>
             while(lines[i+1][j] != '<'){
                 (*listIndex)[sizeIndex - 1].phaseType[j-4] = lines[i+1][j];
                 j++;
@@ -107,9 +119,11 @@ int indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lin
             (*listIndex)[sizeIndex - 1].phaseType[j-4] = '\0';
             j = 4;
         }
+        //End of the process
         else if(strcmp(lines[i], "    </Placemark>\n") == 0){
             *lastLine = i + 1;
             (*listIndex)[sizeIndex - 1].end = i;
+            //Reallocating the list to increase for the next process
             *listIndex = realloc(*listIndex, ++sizeIndex * sizeof(struct Index));
             if(!(*listIndex)){
                 printf("Error reallocating memory.\n");
@@ -129,8 +143,14 @@ int compare(struct Index* a, struct Index* b){
     return strcmp(a->phaseType, b->phaseType);
 }
 
+/*
+Description: Function to calculate and show the frequency of each type of phase in the file
+Parameters: listIndex, qntProcess (Passed by value) // qnt (Passed by reference)
+Returns: Return 0 if successful, 1 otherwise
+*/
 int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess){
     int sizeQnt = 1;
+
     *qnt = (int*)malloc(sizeQnt * sizeof(int));
     if (!(*qnt)) {
         printf("Error allocating memory.\n");
@@ -138,13 +158,16 @@ int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess){
     }
 
     (*qnt)[sizeQnt - 1] = 1;   //Define first position equal to 1
+    //All processes
     for (int i = 1; i < qntProcess; i++) {
+        //The same phase type
         if (!strcmp(listIndex[i].phaseType, listIndex[i - 1].phaseType)) {
             (*qnt)[sizeQnt - 1]++;
         }
         else {
             printf("%s\t%d\n", listIndex[i - 1].phaseType, (*qnt)[sizeQnt - 1]);
             sizeQnt++;
+            //Reallocating the array qnt to increase the size for the next phase type 
             *qnt = (int*)realloc(*qnt, sizeQnt * sizeof(int));
             if (!(*qnt)) {
                 printf("Error reallocating memory.\n");
@@ -153,14 +176,21 @@ int phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess){
             (*qnt)[sizeQnt - 1] = 1;
         }
     }
+    //Printing the last type of phase frequency
+    printf("%s\t%d\n", listIndex[qntProcess - 1].phaseType, (*qnt)[sizeQnt - 1]);
     return 0;
 }
 
+/*
+Description: Function to overwrite the file, based on the phase frequency and the listIndex
+Parameters: firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines
+Returns: Return 0 if successful, 1 otherwise
+*/
 int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Index* listIndex, int* qnt, char** lines){
     int i;
     int aux = 0, aux2 = 0;
 
-    FILE* newFile = fopen("MG.kml", "w");
+    FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
         printf("Error opening file.\n");
         return 1;
@@ -174,17 +204,22 @@ int write(int firstLine, int lastLine, int qntProcess, int numLines, struct Inde
     //Writing the middle of the file, creating a folder for every phaseType
     fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[aux].phaseType);
     for(i = 0; i < qntProcess; i++){
+        //Checks if the quantity of each phase Type was written
         if(qnt[aux] == aux2){
             aux2 = 0;
             aux++;
+            //Close the last folder
             fprintf(newFile,"</Folder>\n");
+            //Open the next folder
             fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[i].phaseType);
         }
+
         for(int j = listIndex[i].start; j <= listIndex[i].end; j++){
             fprintf(newFile, "%s",lines[j]);
         }
         aux2++;
     }
+    //Closing the last folder
     fprintf(newFile,"</Folder>\n");
 
     //Writing the end of the file, like the old one
@@ -227,7 +262,7 @@ int main(){
         return 1;
     }
 
-    printf("\nFINISHED");
+    printf("\nFINISHED\2");
 
     for (int i = 0; i < numLines; i++) {
         free(lines[i]);
