@@ -53,6 +53,44 @@ void phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
     }
 }
 
+void write(int firstLine, int lastLine, int qntProcess, int numLines, struct Index* listIndex, int* qnt, char** lines){
+    int i;
+    int aux = 0, aux2 = 0;
+
+    FILE* newFile = fopen("PB.kml", "w");
+    if (!newFile) {
+        printf("Error opening file.\n");
+        return 1;
+    }
+
+    //Writing the begining of the file, like the old one
+    for(i = 0; i < firstLine; i++){
+        fprintf(newFile,"%s",lines[i]);
+    }
+
+    //Writing the middle of the file, creating a folder for every phaseType
+    fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[aux].phaseType);
+    for(i = 0; i < qntProcess; i++){
+        if(qnt[aux] == aux2){
+            aux2 = 0;
+            aux++;
+            fprintf(newFile,"</Folder>\n");
+            fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[i].phaseType);
+        }
+        for(int j = listIndex[i].start; j <= listIndex[i].end; j++){
+            fprintf(newFile, "%s",lines[j]);
+        }
+        aux2++;
+    }
+    fprintf(newFile,"</Folder>\n");
+
+    //Writing the end of the file, like the old one
+    for(i = lastLine; i < numLines; i++){
+        fprintf(newFile,"%s",lines[i]);
+    }
+    fclose(newFile);
+}
+
 int main() {
     int lastLine = 0, firstLine = 0;
     int flag = 0;
@@ -158,6 +196,8 @@ int main() {
 
     phaseFrequency(&qnt, listIndex, qntProcess);
 
+    write(firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines);
+    /*
     //Overwrinting the same file
     FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
@@ -192,6 +232,7 @@ int main() {
         fprintf(newFile,"%s",lines[i]);
     }
     fclose(newFile);
+    */
     printf("FINISHED");
 
     for (i = 0; i < numLines; i++) {
