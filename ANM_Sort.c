@@ -27,15 +27,42 @@ int compare(struct Index* a, struct Index* b){
     return strcmp(a->phaseType, b->phaseType);
 }
 
+void phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
+    int sizeQnt = 1;
+    *qnt = (int*)malloc(sizeQnt * sizeof(int));
+    if (!(*qnt)) {
+        printf("Error allocating memory.\n");
+        return;
+    }
+
+    (*qnt)[sizeQnt - 1] = 1;   //Define first position equal to 1
+    for (int i = 1; i < qntProcess; i++) {
+        if (!strcmp(listIndex[i].phaseType, listIndex[i - 1].phaseType)) {
+            (*qnt)[sizeQnt - 1]++;
+        }
+        else {
+            printf("%s\t%d\n", listIndex[i - 1].phaseType, (*qnt)[sizeQnt - 1]);
+            sizeQnt++;
+            *qnt = (int*)realloc(*qnt, sizeQnt * sizeof(int));
+            if (!(*qnt)) {
+                printf("Error reallocating memory.\n");
+                return;
+            }
+            (*qnt)[sizeQnt - 1] = 1;
+        }
+    }
+}
+
 int main() {
     int lastLine = 0, firstLine = 0;
     int flag = 0;
     int j = 4, i;
     int qntProcess = 0;
-    int sizeIndex = 1, sizeQnt = 1;
+    int sizeIndex = 1;
     int linesSize = INITIAL_SIZE;
     int numLines = 0;
-    char buffer[1024]; //Maximum length of the line 
+    char buffer[1024]; //Maximum length of the line
+    int* qnt;
 
     //********Alocating memory**********
     //Memory allocation for a matrix containing the file's lines, line by line
@@ -51,12 +78,6 @@ int main() {
         return 1;
     }
     
-    int* qnt = (int*) malloc(sizeQnt * sizeof(int));
-    if (!qnt) {
-        printf("Error allocating memory.\n");
-        return 1;
-    }
-
     //Opening file for reading
     FILE *f = fopen("PB.kml", "r");
     if (!f) {
@@ -135,23 +156,7 @@ int main() {
     //Quick sorting lisIndex alphabetically, by phaseType
     qsort(listIndex, qntProcess, sizeof(struct Index), compare);
 
-    //Counting the quantity of each phaseType in the file
-    qnt[sizeQnt - 1] = 1;   //Define first position equal to 1
-    for(i = 1; i < qntProcess; i++){
-        if(!strcmp(listIndex[i].phaseType, listIndex[i-1].phaseType)){
-            qnt[sizeQnt - 1]++;
-        }
-        else{
-            //printf("%d\n",qnt[sizeQnt - 1]);
-            qnt = realloc(qnt, ++sizeQnt * sizeof(int));
-            if(!qnt){
-                printf("Error reallocating memory.\n");
-                free(qnt);
-                return 1;
-            }
-            qnt[sizeQnt - 1] = 1;
-        }
-    }
+    phaseFrequency(&qnt, listIndex, qntProcess);
 
     //Overwrinting the same file
     FILE* newFile = fopen("PB.kml", "w");
