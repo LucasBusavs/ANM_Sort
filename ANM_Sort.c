@@ -27,6 +27,48 @@ int compare(struct Index* a, struct Index* b){
     return strcmp(a->phaseType, b->phaseType);
 }
 
+void indexing(struct Index** listIndex, int numLines, int* qntProcess, char** lines, int* firstLine, int* lastLine){
+    int j = 4;
+    int flag = 0;
+    int sizeIndex = 1;
+
+    *listIndex = (struct Index*) malloc(sizeIndex * sizeof(struct Index)); 
+    if (!(*listIndex)) {
+        printf("Error allocating memory.\n");
+        return;
+    }
+    
+    //Generate the listIndex of all mining processes
+    for (int i = 0; i < numLines; i++) {
+        if(strcmp(lines[i], "    <Placemark>\n") == 0){
+            (*qntProcess)++;
+            if(!flag){
+                *firstLine = i;
+                flag = 1;
+            }
+            (*listIndex)[sizeIndex - 1].start = i;
+        }
+        else if(strcmp(lines[i], "<td>Fase</td>\r\n") == 0){
+            while(lines[i+1][j] != '<'){
+                (*listIndex)[sizeIndex - 1].phaseType[j-4] = lines[i+1][j];
+                j++;
+            }
+            (*listIndex)[sizeIndex - 1].phaseType[j-4] = '\0';
+            j = 4;
+        }
+        else if(strcmp(lines[i], "    </Placemark>\n") == 0){
+            *lastLine = i + 1;
+            (*listIndex)[sizeIndex - 1].end = i;
+            *listIndex = realloc(*listIndex, ++sizeIndex * sizeof(struct Index));
+            if(!(*listIndex)){
+                printf("Error reallocating memory.\n");
+                free(listIndex);
+                return;
+            }
+        }
+    }
+}
+
 void phaseFrequency(int** qnt, struct Index* listIndex, int qntProcess) {
     int sizeQnt = 1;
     *qnt = (int*)malloc(sizeQnt * sizeof(int));
@@ -60,7 +102,7 @@ void write(int firstLine, int lastLine, int qntProcess, int numLines, struct Ind
     FILE* newFile = fopen("PB.kml", "w");
     if (!newFile) {
         printf("Error opening file.\n");
-        return 1;
+        return;
     }
 
     //Writing the begining of the file, like the old one
@@ -101,6 +143,7 @@ int main() {
     int numLines = 0;
     char buffer[1024]; //Maximum length of the line
     int* qnt;
+    struct Index* listIndex;
 
     //********Alocating memory**********
     //Memory allocation for a matrix containing the file's lines, line by line
@@ -110,12 +153,14 @@ int main() {
         return 1;
     }
     
+    /*
     struct Index* listIndex = (struct Index*) malloc(sizeIndex * sizeof(struct Index)); 
     if (!listIndex) {
         printf("Error allocating memory.\n");
         return 1;
     }
-    
+    */
+
     //Opening file for reading
     FILE *f = fopen("PB.kml", "r");
     if (!f) {
@@ -160,7 +205,10 @@ int main() {
     }
     fclose(f);
     //Finished reading the file
+    
+    indexing(&listIndex, numLines, &qntProcess, lines, &firstLine, &lastLine);
 
+    /*
     //Generate the listIndex of all mining processes
     for (i = 0; i < numLines; i++) {
         if(strcmp(lines[i], "    <Placemark>\n") == 0){
@@ -190,6 +238,7 @@ int main() {
             }
         }
     }
+    */
 
     //Quick sorting lisIndex alphabetically, by phaseType
     qsort(listIndex, qntProcess, sizeof(struct Index), compare);
@@ -197,42 +246,7 @@ int main() {
     phaseFrequency(&qnt, listIndex, qntProcess);
 
     write(firstLine, lastLine, qntProcess, numLines, listIndex, qnt, lines);
-    /*
-    //Overwrinting the same file
-    FILE* newFile = fopen("PB.kml", "w");
-    if (!newFile) {
-        printf("Error opening file.\n");
-        return 1;
-    }
 
-    //Writing the begining of the file, like the old one
-    for(i = 0; i < firstLine; i++){
-        fprintf(newFile,"%s",lines[i]);
-    }
-
-    //Writing the middle of the file, creating a folder for every phaseType
-    int aux = 0, aux2 = 0;
-    fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[aux].phaseType);
-    for(i = 0; i < qntProcess; i++){
-        if(qnt[aux] == aux2){
-            aux2 = 0;
-            aux++;
-            fprintf(newFile,"</Folder>\n");
-            fprintf(newFile,"\t\t<Folder>\n\t\t\t<name>%s</name>\n",listIndex[i].phaseType);
-        }
-        for(int j = listIndex[i].start; j <= listIndex[i].end; j++){
-            fprintf(newFile, "%s",lines[j]);
-        }
-        aux2++;
-    }
-    fprintf(newFile,"</Folder>\n");
-
-    //Writing the end of the file, like the old one
-    for(i = lastLine; i < numLines; i++){
-        fprintf(newFile,"%s",lines[i]);
-    }
-    fclose(newFile);
-    */
     printf("FINISHED");
 
     for (i = 0; i < numLines; i++) {
